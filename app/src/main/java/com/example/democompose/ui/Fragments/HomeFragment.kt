@@ -1,13 +1,18 @@
-package com.example.democompose
+package com.example.democompose.ui.Fragments
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.*
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -18,43 +23,72 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.viewModels
+import com.example.democompose.R
+import com.example.democompose.Screen
 import com.example.democompose.data.Item
 import com.example.democompose.data.ItemList
+import com.example.democompose.navigate
 import com.example.democompose.ui.theme.DemoComposeTheme
 import com.example.democompose.ui.theme.Red700
 
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
 
-        setContent {
-            DemoComposeTheme {
-                HomeScaffold()
+class HomeFragment : Fragment() {
+
+    private val viewModel:HomeViewModel by viewModels { HomeViewModelFactory() }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        // Inflate the layout for this fragment
+        viewModel.navigateTo.observe(viewLifecycleOwner) { navigateToEvent ->
+            navigateToEvent.getContentIfNotHandled()?.let { navigateTo ->
+                navigate(navigateTo, Screen.Home)
+            }
+        }
+
+
+        return ComposeView(requireContext()).apply {
+            id=R.id.homeFragment
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+
+            setContent {
+                DemoComposeTheme {
+                    HomeScaffold()
+                }
             }
         }
     }
 
-    @Composable
-    fun HomeScaffold() {
-        val selectedIndex = remember { mutableStateOf(0) }
-        Scaffold(
-            topBar = { CustomAppBar() },
-            content = {
-                HomeScreen()
-            },
-            bottomBar = { CustomBottomBar(selectedIndex = selectedIndex) }
 
-        )
-    }
 }
+
+@Preview
+@Composable
+fun HomeScaffold() {
+    val selectedIndex = remember { mutableStateOf(0) }
+    Scaffold(
+        topBar = { CustomAppBar() },
+        content = {
+            HomeScreen()
+        },
+        bottomBar = { CustomBottomBar(selectedIndex = selectedIndex) }
+
+    )
+}
+
 
 @Composable
 fun HomeScreen() {
@@ -178,7 +212,7 @@ fun RoundedIconButton(icon: Int, description: String) {
         Box(
             modifier = Modifier
                 .size(60.dp)
-                .background(color = Red700, shape = RoundedCornerShape(10.dp))
+                .background(color = MaterialTheme.colors.primary, shape = RoundedCornerShape(10.dp))
                 .weight(1f)
         ) {
             IconButton(
@@ -253,7 +287,7 @@ fun TabIcons(icon: Int, isTintColor: Boolean) {
             modifier = Modifier.size(30.dp),
             painter = painterResource(icon),
             contentDescription = "bottomIcon",
-            colorFilter = ColorFilter.tint(Red700),
+            colorFilter = ColorFilter.tint(MaterialTheme.colors.primary),
             contentScale = ContentScale.Fit,
 
             )
@@ -269,7 +303,6 @@ fun TabIcons(icon: Int, isTintColor: Boolean) {
 }
 
 
-@Preview
 @Composable
 fun CustomLargeButton() {
     Button(
